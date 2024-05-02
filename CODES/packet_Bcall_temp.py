@@ -51,7 +51,7 @@ class Immobilizer:
         self.linear_speed = 0.5
         self.angular_speed = 1.0
         self.immobilized = False  # Flag to control movement
-		self.Bcall = 0
+        self.Bcall = 0
 
     def init_ros(self):
         rospy.init_node("robot_controller_node")
@@ -216,7 +216,10 @@ def switch_check():
                     beep()
                 immobilizer.send_message_to_azure(message_body1)
                 print("Breakdown Alert Sent to Azure Cloud")
-                os._exit(0)
+                GPIO.output(BUZZER_PIN, GPIO.LOW)  # Turn off the buzzer
+                print('Buzzer Off')
+
+                #os._exit(0)
             else:
                 print('Switch OFF (withdrawn)')
                 GPIO.output(BUZZER_PIN, GPIO.LOW)
@@ -226,6 +229,7 @@ def switch_check():
 
         switch_state = new_switch_state
     time.sleep(0.1)  # Short delay
+    switch_check()
 def read_serial(ser):
     prev_ticks = [0, 0, 0, 0]
     forward_distance = 0
@@ -259,7 +263,7 @@ def read_serial(ser):
                 except ValueError:
                     print("Failed to parse battery percentage:", res)
                     continue
-             if b"Temperature" in res:
+            if b"Temperature" in res:
                 try:
                     decoded_res = res.decode('utf-8')
                     split_res = decoded_res.split(":")
@@ -269,6 +273,10 @@ def read_serial(ser):
                         #print(f"Temperature: {Temperature}°C")
                     else:
                         continue
+                except ValueError:
+                    #print("Failed to parse Temperature data:", res)
+                    continue
+
             try:
                 split_data = res.decode('utf-8').split(',')
             except UnicodeDecodeError:
